@@ -1,6 +1,3 @@
-[![npm][npm]][npm-url]
-[![node][node]][node-url]
-
 <div align="center">
   <h1>Inline Raw Source Plugin</h1>
   <!-- <p></p> -->
