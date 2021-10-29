@@ -1,6 +1,6 @@
 {
   "name": "inline-raw-source-plugin",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "set raw source to inline",
   "main": "index.js",
   "scripts": {
