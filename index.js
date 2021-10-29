@@ -16,10 +16,10 @@ class InlineRawSourcePlugin {
     apply(compiler) {
         // 源碼進行壓縮
         compiler.hooks.compilation.tap("inlineRawSourcePlugin", compilation => {
-            compilation.hooks.chunkAsset.tap("inlineRawSourcePlugin", async chunk => {
+            compilation.hooks.chunkAsset.tap("inlineRawSourcePlugin", chunk => {
                 const chunkIndex = this.chunkname.indexOf(chunk.name);
                 if (chunkIndex > -1) {
-                    let result = await minify(chunk.entryModule._source._value).code
+                    let result = minify(chunk.entryModule._source._value).code
                     this.result += `<script>${result}</script>`
                     this.notFoundChunkName.splice(chunkIndex, 1)
                 }
