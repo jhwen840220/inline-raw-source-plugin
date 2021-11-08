@@ -19,9 +19,12 @@ class InlineRawSourcePlugin {
             compilation.hooks.chunkAsset.tap("inlineRawSourcePlugin", chunk => {
                 const chunkIndex = this.chunkname.indexOf(chunk.name);
                 if (chunkIndex > -1) {
-                    let result = minify(chunk.entryModule._source._value).code
-                    this.result += `<script>${result}</script>`
-                    this.notFoundChunkName.splice(chunkIndex, 1)
+                    minify(chunk.entryModule._source._value)
+                        .then(res => {
+                            console.log(res.code)
+                            this.result += `<script>${res.code}</script>`
+                            this.notFoundChunkName.splice(chunkIndex, 1)
+                        })
                 }
             });
         });
