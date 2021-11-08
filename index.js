@@ -21,7 +21,6 @@ class InlineRawSourcePlugin {
                 if (chunkIndex > -1) {
                     minify(chunk.entryModule._source._value)
                         .then(res => {
-                            console.log(res.code)
                             this.result += `<script>${res.code}</script>`
                             this.notFoundChunkName.splice(chunkIndex, 1)
                         })
