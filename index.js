@@ -83,12 +83,6 @@ class InlineRawSourcePlugin {
                         }
                     }
                 )
-
-                fs.stat(path.join(stats.compilation.outputOptions.path, this.filename), (err, state) => {
-                    if (state) {
-                        fs.unlinkSync(path.join(stats.compilation.outputOptions.path, this.filename));
-                    }
-                })
             }
         })
     }
