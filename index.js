@@ -1,6 +1,6 @@
 const { minify } = require("terser");
-const fs = require('fs');
 const path = require('path');
+const { relative } = path;
 
 class InlineRawSourcePlugin {
     constructor(options) {
@@ -14,6 +14,8 @@ class InlineRawSourcePlugin {
         this.hintMsg = "\"inline-raw-source-plugin\"\r\n";
     }
     apply(compiler) {
+        if (this.path) this.getRelativeAssetPath(compiler);
+        
         // 源碼進行壓縮
         compiler.hooks.compilation.tap("inlineRawSourcePlugin", compilation => {
             compilation.hooks.chunkAsset.tap("inlineRawSourcePlugin", chunk => {
@@ -35,8 +37,8 @@ class InlineRawSourcePlugin {
             cb();
         });
 
-        // 產生我們要的 html 檔
-        compiler.hooks.emit.tapAsync('inlineRawSourcePlugin', (compilation, cb) => {
+        compiler.hooks.emit.tap('inlineRawSourcePlugin', compilation => {
+            // 產生我們要的 html 檔
             const fileListName = this.filename;
             const result = this.result;
             if (result.length) {
@@ -51,40 +53,24 @@ class InlineRawSourcePlugin {
             } else {
                 compilation.warnings.push(`${this.hintMsg}並未產生任何 inline-source 代碼，因此無法產出 ${fileListName}`);
             }
-            cb();
-        });
-
-        // 刪除不必要的 output 檔案
-        compiler.hooks.done.tap('inlineRawSourcePlugin', stats => {
-            if (compiler.outputFileSystem.constructor.name !== "NodeOutputFileSystem") {
-                return;
-            }
-            const assets = stats.toJson().assets.map(asset => asset.name);
-
+            // 刪除不必要的 output 檔案
             const matchFiles = this.chunkname.reduce((result, chunkname) => {
-                const filename = assets.find(asset => asset.includes(chunkname))
-                const regExp = /.*\.js/;
-                filename && regExp.test(filename) && result.push(filename.match(regExp)[0])
+                const filename = Object.keys(compilation.assets).find(asset => asset.includes(chunkname))
+                if (filename) result.push(filename)
                 return result
             }, [])
 
-            if (!matchFiles.length) return;
-            
-            matchFiles.forEach(matchFile => {
-                fs.unlinkSync(path.join(stats.compilation.outputOptions.path, matchFile))
-            });
-
-            if (this.path) {
-                fs.rename(
-                    path.join(stats.compilation.outputOptions.path, this.filename), 
-                    path.join(this.path, this.filename), err => {
-                        if (err) {
-                            throw err;
-                        }
-                    }
-                )
+            if (matchFiles.length) {
+                matchFiles.forEach(matchFile => {
+                    delete compilation.assets[matchFile]
+                });
             }
-        })
+        });
+    }
+
+    getRelativeAssetPath(compiler) {
+        const outputPath = compiler.options.output.path;
+        this.filename = `${relative(outputPath, this.path)}/${this.filename}`;
     }
 }
 module.exports = InlineRawSourcePlugin;
